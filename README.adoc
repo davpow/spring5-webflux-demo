@@ -1,4 +1,6 @@
-= Head-First Reactive Workshop
+= Getting started with Spring 5 Webflux - Reactive Streams, Flux , Mono
+
+A modified copy of https://github.com/reactor/head-first-reactive-with-spring-and-reactor[Head-First Reactive Workshop]
 
 This repository hosts a complete workshop on Spring + Reactor.
 You can follow the script
