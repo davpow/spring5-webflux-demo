@@ -1,7 +1,12 @@
 package io.spring.workshop.stockquotes;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
 import reactor.core.publisher.Mono;
 
 import org.springframework.stereotype.Component;
@@ -21,6 +26,12 @@ public class QuoteHandler {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final QuoteGenerator quoteGenerator;
+
+	@Autowired
+    private SearchRequestValidator searchRequestValidator;
+
+	@Autowired
+	private IEXTradingClient iexTradingClient;
 
 	public QuoteHandler(QuoteGenerator quoteGenerator) {
 		this.quoteGenerator = quoteGenerator;
@@ -66,4 +77,39 @@ public class QuoteHandler {
 	private void onComplete(long elapseTimeMillis) {
 		logger.info("transactionElapseTimeMillis="+elapseTimeMillis);
 	}
+
+
+	public Mono<ServerResponse> search(ServerRequest serverRequest) {
+
+		long start = System.currentTimeMillis();
+
+		return serverRequest.bodyToMono(SearchRequest.class)
+				.doOnNext(searchRequestValidator::validate)
+				.flatMap(req -> iexTradingClient.search(getIexQueryParams(req)).map(SearchResult::new))
+				.onErrorResume(this::handleError)
+				.flatMap(response ->
+
+						ServerResponse.status(response.getResponseStatus().getHttpCode())
+								.contentType(MediaType.APPLICATION_JSON)
+								.syncBody(response)
+
+				).doFinally(signal -> {
+							logger.info("endpoints.symbols.search.responsetime=" + (System.currentTimeMillis() - start));
+						}
+				);
+	}
+
+	private LinkedMultiValueMap<String, String> getIexQueryParams(SearchRequest sr) {
+		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+		map.add("symbols", StringUtils.join(sr.getSymbols(), ","));
+		if(!sr.getContent_types().isEmpty())
+			map.add("types", StringUtils.join(sr.getContent_types(), ","));
+		return map;
+	}
+
+	private Mono<? extends SearchResult> handleError(Throwable error) {
+		logger.error("Error occurs while processing request: ", error);
+		return Mono.just(new SearchResult(error));
+	}
+
 }

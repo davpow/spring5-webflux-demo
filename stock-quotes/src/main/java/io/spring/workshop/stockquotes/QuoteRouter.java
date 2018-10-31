@@ -17,10 +17,12 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 @Configuration
 public class QuoteRouter {
 
+   // curl -X POST   http://localhost:8081/search   -H 'Cache-Control: no-cache'   -H 'Content-Type: application/json'    -d '{"symbols": [ "AAPL","FB"],"content_types" : ["quote"]}'
 	@Bean
 	public RouterFunction<ServerResponse> route(QuoteHandler quoteHandler) {
 		return RouterFunctions
 				.route(GET("/streamquotes").and(accept(APPLICATION_STREAM_JSON)), quoteHandler::streamQuotes)
-				.andRoute(GET("/fetchquotes").and(accept(APPLICATION_JSON)), quoteHandler::fetchQuotes);
+				.andRoute(GET("/fetchquotes").and(accept(APPLICATION_JSON)), quoteHandler::fetchQuotes)
+                .andRoute(POST("/search").and(accept(APPLICATION_JSON)), quoteHandler::search);
 	}
 }
