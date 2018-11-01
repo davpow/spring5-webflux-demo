@@ -1,10 +1,23 @@
-= Getting started with Spring 5 Webflux - Reactive Streams, Flux , Mono
+# Spring 5 Webflux Demo App
 
-A modified copy of https://github.com/reactor/head-first-reactive-with-spring-and-reactor[Head-First Reactive Workshop]
+This repository is a modified copy of the project from https://github.com/reactor/head-first-reactive-with-spring-and-reactor[Head-First Reactive Workshop]
 
-This repository hosts a complete workshop on Spring + Reactor.
-You can follow the script
-https://reactor.github.io/head-first-reactive-with-spring-and-reactor/[follow the script]
-(the source document is in the "docs" folder) to create your first
-WebFlux applications!
-Each step of this workshop has its companion commit in the git history with a detailed commit message.
+This project demonstrates how to create a simple Spring 5 Webflux Reactor Application. It shows how to work with Webflux Reactive Streams, Flux and Mono.
+
+## Getting Started
+
+1. Checkout the repo
+2. Run the app as a SpringBoot app
+
+## Endpoints
+
+The supported endpoints are defined in the `QuoteRouter` class.
+
+* `GET /streamquotes` endpoint fetch a continous stream of random quotes.
+* `GET /fetchquotes` endpoint fetch a Flux of Quotes with random changes in Quotes prices on each invocation.
+* `POST /search` endpoint fetch content for the specified stock symbols. 
+** Once the app is running locally, you can POST to the `/search` endpoint using:
+** `curl -X POST http://localhost:8081/search -H 'Cache-Control: no-cache' -H 'Content-Type: application/json' -d '{"symbols": [ "AAPL","FB"],"content_types" : ["quote"]}'`
+** Valid content_types are `quote,news,chart`
+** NOTE: The `/search` endpoint makes a call out to a 3rd party API to get the stock quotes (This demo usage of Spring Reactive `WebClient` API). 
+For more info see: https://iextrading.com/developer/docs/#stocks[IEX Trading]
