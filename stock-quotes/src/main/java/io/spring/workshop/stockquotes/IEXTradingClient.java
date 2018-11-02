@@ -17,7 +17,7 @@ public class IEXTradingClient {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public Mono<JsonNode> search(LinkedMultiValueMap<String, String> params) {
-
+        long start = System.currentTimeMillis();
         return WebClient.create().get()
                 .uri(builder -> builder.scheme("https")
                         .host("ws-api.iextrading.com")
@@ -25,7 +25,11 @@ public class IEXTradingClient {
                         .queryParams(params)
                         .build()
                 )
-                .retrieve().bodyToMono(JsonNode.class);
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .doFinally(signalType -> {
+                    logger.info("call.iex_trading_client.responsetime="+ (System.currentTimeMillis() - start));
+                });
     }
 
 }
